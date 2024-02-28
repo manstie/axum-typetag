@@ -1,0 +1,31 @@
+version: "3.8"
+
+volumes:
+  postgres:
+    driver: local
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_ROOT_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_ROOT_USER}
+      - TZ=${TIMEZONE}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    expose:
+    - 5432
+
+  workspace:
+    build:
+      args:
+        - APP_CODE_PATH_CONTAINER=${APP_CODE_PATH_CONTAINER}
+        - RUST_VERSION=${RUST_VERSION}
+      context: ./docker/workspace
+    image: ${DOCKER_REGISTRY}/${COMPOSE_PROJECT_NAME}_workspace:0.0.1
+    depends_on:
+      - postgres
+    tty: true
+    volumes:
+      - ../..:/workspaces:cached
